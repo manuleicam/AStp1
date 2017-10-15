@@ -1,6 +1,9 @@
 
+import astp1.Ativos;
+import astp1.AtivosComprados;
 import astp1.BuscarPrecos;
 import astp1.ESSLDT;
+import astp1.Utilizador;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -19,19 +22,16 @@ import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.Serializable;
 import java.io.ObjectOutputStream;
 
 public class Menu {
     // variáveis de instância
     private List<String> opcoes;
-    private String[] menuPrinc = {"LogIn", "Registar", "Ver Preços", "Criar Activos"};
-    private String[] menuUtil = {"Ver portfólio", "Logout"};
-    private String[] menuViagem = {"Viatura mais próxima","Escolher viatura"};
-    private String[] menuEstatistica = {"Top 10 clientes gastadores", "Piores 5 motoristas", "Total facturado por uma empresa", "Total facturado por um veiculo"};
-    private String[] menuMotoristaComEmpresa = {"Associar-se a uma viatura","Ver Viagens Efectuadas", "Mudar o estado", "Libertar Carro"};
-    private String[] menuMotoristaPrivado = {"Registar Nova Viatura", "Ver Viagens Efectuadas", "Associar-se a uma empresa", "Mudar o estado"};
-    private String[] menuEmpresa = {"Registar Nova Viatura","Ver Frota", "Ver Viagens Efectuadas"};
-    private static final String OBJECT_FILE = "umerTaxis.obj";
+    private String[] menuPrinc = {"LogIn", "Registar", "Actualizar da API", "Criar Activos", "Guardar estado"};
+    private String[] menuUtil = {"Ver portfólio", "Ver Activos"};
+    private String[] menuDetalhesAtivos = {"Comprar"};
+    private static final String OBJECT_FILE = "essLDT.obj";
     
     private int op, esc;
     public ESSLDT essldt;
@@ -51,6 +51,7 @@ public class Menu {
         
         try {
             essldt = ESSLDT.createFromFile(OBJECT_FILE);
+            essldt.iniciaThreads();
             menuPrinc();
         }
         catch (Exception e) {
@@ -87,7 +88,9 @@ public class Menu {
                     registar();
                     break;
                 case 3:
-                    essldt.verPrecos();
+                    //escreveAtivos();
+                    essldt.actValFromAPI();
+                    //menuAtivos();
                     break;
                 case 4:
                     essldt.adicionarAtivos();
@@ -105,19 +108,22 @@ public class Menu {
     
     public void menuUtil(){
         boolean x = true;
+        Utilizador aux;
+        
+        //System.out.println("\n"+aux.toString());
         while(x){
+            aux = essldt.getUtilizadorAtual();
+            System.out.println("\n"+aux.toString());
             setOpcoes(menuUtil);
             executa();
             esc = getOpcao();
             switch (esc) {
                 case 1:
-                    logIN();
+                    verPotefolio();
                     break;
                 case 2:
-                    registar();
-                    break;
-                case 5:
-                    save();
+                    escreveAtivos();
+                    menuAtivos();
                     break;
                 case 0:
                     x = false;
@@ -125,7 +131,45 @@ public class Menu {
                     break;
             }
         }
+    }
+    
+    public void menuAtivos(){
+        boolean x = true;
+        int e;
+        Ativos a;
+        while(x){
+            e = escolha.nextInt();
+            if(e>0 && e<=essldt.getSizeAtivos()){
+                a = new Ativos(essldt.getAtivoAver(e));
+                menuAtivoDetalhes(a);
+                x=false;
+            }
+            else {
+                menuUtil();
+                x = false;
+            }
+        }
    }
+    
+    public void menuAtivoDetalhes(Ativos a){
+        System.out.println("\n" + a.toString());
+        boolean x = true;
+        while(x){
+            setOpcoes(menuDetalhesAtivos);
+            executa();
+            esc = getOpcao();
+            switch (esc) {
+                case 1:
+                    comprarAtivo(a);
+                    x=false;
+                    break;
+                case 0:
+                    x = false;
+                    break;
+            }
+        }
+        
+    }
     
     public void setOpcoes(String[] opcoes) {
         this.opcoes = Arrays.asList(opcoes);
@@ -187,7 +231,7 @@ public class Menu {
         System.out.println("Insira o user que pretende");
         nome = escolha.nextLine();
         while(essldt.verExiste(nome)){
-            System.out.println("User já em uso, por favor escolha outro");
+            System.out.println("Nome já em uso, por favor escolha outro");
             nome = escolha.nextLine();
         }
         System.out.println("Insira a password");
@@ -202,7 +246,7 @@ public class Menu {
         int flagLog;
 
         escolha.nextLine();
-        System.out.println("Insira o seu email");
+        System.out.println("Insira o seu Nome");
         user = escolha.nextLine();
 
         System.out.println("Insira a sua password");
@@ -211,11 +255,11 @@ public class Menu {
         flagLog = essldt.login(user, password);
         while (flagLog != 1 && flagLog != 2 && flagLog != 3) {
             if (flagLog == 0) {
-                System.out.println("Password não corresponde ao Email inserido");
+                System.out.println("Password não corresponde ao Nome inserido");
             } else {
                 System.out.println("O email inserido não se encontra registado");
             }
-            System.out.println("Insira o seu Email");
+            System.out.println("Insira o seu Nome");
             user = escolha.nextLine();
 
             System.out.println("Insira a sua password");
@@ -225,4 +269,39 @@ public class Menu {
         }
         menuUtil();
     }
+    
+    public void escreveAtivos(){
+        int x = 0;
+        HashMap<String, Ativos> eativos;
+        eativos = essldt.getAtivos();
+        for(Ativos a : eativos.values()){
+            x++;
+            System.out.println(x + "- " + a.toString());
+        }
+    }
+    
+    public void verPotefolio(){
+        System.out.println();
+        HashMap<String, AtivosComprados> eativos;
+        eativos = essldt.getAtivosUtil();
+        for(AtivosComprados a : eativos.values()){
+            System.out.println(a.toString());
+        }
+    }
+    
+    public void comprarAtivo(Ativos a){
+        escolha.nextLine();
+        int n;
+        System.out.println("Insira o número de ativos que deseja comprar");
+        n = escolha.nextInt();
+        if(essldt.verificaDinheiro(a,n)){
+            System.out.print("Preço que pagou " + a.getActualValue()*n);
+            essldt.comprarAtivo(a,n);
+        }
+        else{
+            System.out.println("Dinheiro Insuficiente!! Compra Cancelada!!");
+        }
+    }
+    
+    
 }

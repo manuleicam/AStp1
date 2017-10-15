@@ -12,16 +12,18 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.HashMap;
+import java.io.Serializable;
 
 /**
  *
  * @author Manuel
  */
-public class ESSLDT {
+public class ESSLDT implements Serializable {
 
     private HashMap<String, Utilizador> utilizadores;
     private HashMap<String, Ativos> activos;
     private Utilizador utilizadorAtual;
+    private BuscarPrecos bp;
     
     public void save(String file) throws IOException {
             FileOutputStream fos = new FileOutputStream(file);
@@ -46,12 +48,24 @@ public class ESSLDT {
     public ESSLDT(){
         activos = new HashMap<>();
         utilizadores = new HashMap<>();
+        bp = new BuscarPrecos(utilizadores, activos);
     }
     
     public void iniciaThreads() throws InterruptedException {
-        BuscarPrecos bp = new BuscarPrecos(utilizadores, activos);
         Thread actPrecos = new Thread(bp);
         actPrecos.start();
+    }
+    
+    public void actValFromAPI(){
+        bp.getFromAPI();
+    }
+    
+    public Utilizador getUtilizadorAtual(){
+        return this.utilizadorAtual;
+    }
+    
+    public int getSizeAtivos(){
+        return this.activos.size();
     }
     
     public boolean verExiste(String nome){
@@ -78,14 +92,30 @@ public class ESSLDT {
         }
     }
     
-    public void comprarAcao(String nome){
-        
+    public HashMap<String, Ativos> getAtivos(){
+        return this.activos;
     }
     
-    public void verPrecos(){
+    public Ativos getAtivoAver(int escolha){
         for(Ativos a : activos.values()){
-            System.out.println(a.getNome() + " " + a.getActualValue());
+            if (escolha == 1) return a;
+            escolha--;
         }
+        return null;
+    }
+    
+    public HashMap<String, AtivosComprados> getAtivosUtil(){
+        return this.utilizadorAtual.getAtivos();
+    }
+    
+    public boolean verificaDinheiro(Ativos a,int n){
+        return utilizadorAtual.getDinheiroActual() > a.getActualValue()*n;
+    }
+    
+    public double comprarAtivo(Ativos a, int n){
+        AtivosComprados aux = new AtivosComprados(a.getNome(),a.getActualValue(),a.getOldValue(),a.getCode(),n);
+        utilizadorAtual.addAtivos(aux);
+        return utilizadorAtual.getDinheiroActual();
     }
     
     public void adicionarAtivos(){

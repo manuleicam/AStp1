@@ -4,12 +4,12 @@
  * and open the template in the editor.
  */
 package astp1;
-
+import java.io.Serializable;
 /**
  *
  * @author Manuel
  */
-public class Ativos {
+public class Ativos implements Serializable {
     
     private String nome;
     private String code;
@@ -22,6 +22,14 @@ public class Ativos {
         this.actualValue = 0;
         this.oldValue = -1;
         this.dif = 0;
+    }
+    
+    public Ativos(Ativos a){
+        this.nome = a.getNome();
+        this.code = a.getCode();
+        this.actualValue = a.getActualValue();
+        this.oldValue = a.getOldValue();
+        this.dif = a.getDif();
     }
     
     public Ativos(String nome, double aValue, double oValue, String code){
@@ -69,4 +77,19 @@ public class Ativos {
         this.dif = this.actualValue - this.oldValue;
     }
     
+    public String toString(){
+        StringBuilder sb = new StringBuilder();
+        sb.append("Ativo:");
+        sb.append("\n Código: ");
+        sb.append(this.code);
+        sb.append(" Nome: ");
+        sb.append(this.nome);
+        sb.append("\n Valor atual: ");
+        sb.append(this.actualValue);
+        sb.append(" Último valor: ");
+        sb.append(this.oldValue);
+        sb.append(" Diferença do último valor: ");
+        sb.append(this.dif);
+        return sb.toString();
+    }
 }
