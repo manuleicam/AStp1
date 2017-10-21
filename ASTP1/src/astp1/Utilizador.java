@@ -17,7 +17,7 @@ public class Utilizador implements Serializable {
     private String password;
     private double dinheiroActual;
     private double dinheiroInvestido;
-    private double lucro;
+    private double balanco;
     private double dinheiroNosActivos;
     private HashMap<String, AtivosComprados> ativos;
     
@@ -26,7 +26,7 @@ public class Utilizador implements Serializable {
         this.password = password;
         this.dinheiroActual = dinheiro;
         this.dinheiroInvestido = dinheiro;
-        this.lucro = 0;
+        this.balanco = 0;
         this.ativos = new HashMap<>();
     }
     
@@ -50,8 +50,8 @@ public class Utilizador implements Serializable {
         return dinheiroInvestido;
     }
 
-    public double getLucro() {
-        return lucro;
+    public double getBalanco() {
+        return balanco;
     }
     
     public HashMap<String, AtivosComprados> getAtivos(){
@@ -66,8 +66,8 @@ public class Utilizador implements Serializable {
         this.dinheiroInvestido = dinheiroInvestido;
     }
 
-    public void setLucro(double lucro) {
-        this.lucro = lucro;
+    public void setBalanco() {
+        this.balanco = this.dinheiroActual + this.dinheiroNosActivos - this.dinheiroInvestido;
     }
 
     public void setDinheiroNosActivos(double dinheiroNosActivos) {
@@ -78,20 +78,26 @@ public class Utilizador implements Serializable {
         String nomeA;
         nomeA = a.getNome();
         if(ativos.containsKey(nomeA)){
-            ativos.get(nomeA).setTotalPago(a.getTotalPago());
+            ativos.get(nomeA).setTotalPago(1,a.getTotalPago());
             ativos.get(nomeA).setNAtivos(1, a.getNAtivos());
         }
         else{
             ativos.put(nomeA,a);
         }
         dinheiroActual -= a.getTotalPago();
+        setBalanco();
         updateDinheiroAtivos();
+    }
+    
+    public void actDinheiroAtual(int f, double val){
+        if (f == 0) this.dinheiroActual -= val;
+        else this.dinheiroActual += val;
     }
     
     public void updateDinheiroAtivos(){
         this.dinheiroNosActivos = 0;
         for(AtivosComprados a : ativos.values()){
-            this.dinheiroNosActivos += a.getTotalPago();
+            this.dinheiroNosActivos = this.dinheiroNosActivos + (a.getActualValue()* a.getNAtivos());
         }
     }
     
@@ -101,8 +107,8 @@ public class Utilizador implements Serializable {
         sb.append(this.nome);
         sb.append(" Dinheiro Atual: ");
         sb.append(this.dinheiroActual);
-        sb.append("\n Lucro: ");
-        sb.append(this.lucro);
+        sb.append("\n Balanco atual: ");
+        sb.append(this.balanco);
         sb.append(" Dinheiro Invesido: ");
         sb.append(this.dinheiroInvestido);
         sb.append(" Dinheiro nos ativos: ");

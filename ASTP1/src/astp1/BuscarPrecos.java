@@ -62,7 +62,7 @@ public class BuscarPrecos implements Runnable,Serializable {
 
         while (true) {
             try {
-                Thread.sleep(10000);
+                Thread.sleep(20000);
             } catch (InterruptedException ex) {
             }
             for (Ativos a : activos.values()) {
@@ -73,6 +73,9 @@ public class BuscarPrecos implements Runnable,Serializable {
                 a.setActualValue(result);
                 a.setDif();
                 actValue(a.getNome(), result);
+                //if(ESSLDT.getJanela() == 1){
+                //    ESSLDT.escreveAtivos();
+                //}
             }
         }
     }
@@ -84,6 +87,7 @@ public class BuscarPrecos implements Runnable,Serializable {
                 u.getAtivos().get(nome).setActualValue(value);
                 u.getAtivos().get(nome).setDif();
                 u.updateDinheiroAtivos();
+                u.setBalanco();
             }
         }
     }

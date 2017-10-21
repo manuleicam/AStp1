@@ -5,10 +5,12 @@
  */
 package astp1;
 import java.io.Serializable;
+
 /**
  *
  * @author Manuel
  */
+
 public class AtivosComprados extends Ativos {
     
     private double totalPago;
@@ -40,8 +42,9 @@ public class AtivosComprados extends Ativos {
         return this.precoAVender;
     }
     
-    public void setNAVender(int n){
-        this.nAVender = n;
+    public void setNAVender(int f, int n){
+        if (f==0) this.nAVender -= n;
+        else this.nAVender += n;
     }
     
     public void setNAtivos(int f, int n){
@@ -49,12 +52,24 @@ public class AtivosComprados extends Ativos {
         else this.nAtivos += n;
     }
     
-    public void setTotalPago(double value){
-        this.totalPago += value;
+    public void setTotalPago(int f, double value){
+        if(f == 0) this.totalPago -= value;
+        else this.totalPago += value;
     }
     
     public void setPrecoAVender(double value){
         this.precoAVender = value;
+    }
+    
+    public double getValue(int n){
+        double val;
+        val = this.getActualValue() * n;
+        return val;
+    }
+    
+    public void updateCondicoesVenda(double val, int n){
+        setNAVender(1,n);
+        setPrecoAVender(val);
     }
     
     public String toString(){
